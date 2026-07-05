@@ -17,32 +17,32 @@
 }
 
 :root {
-  --font-sans: 'Manrope', 'Inter', 'Google Sans', system-ui, -apple-system, sans-serif;
-  --font-display: 'Manrope', 'Neue Machina', 'Inter', 'Google Sans', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Inter', 'Manrope', 'Google Sans', system-ui, -apple-system, sans-serif;
+  --font-display: 'Inter', 'Manrope', 'Neue Machina', 'Google Sans', system-ui, -apple-system, sans-serif;
   --line-height-base: 1.5;
   
   /* Theme Colors */
-  --bg-primary: #f8fafc;
-  --surface-1: #ffffff;
-  --surface-2: #ffffff;
-  --border: #e2e8f0;
+  --bg-primary: #F8FAFC;
+  --surface-1: #FFFFFF;
+  --surface-2: #FFFFFF;
+  --border: #E5E7EB;
   
   /* Text Colors */
-  --text-primary: #0f172a;
-  --text-secondary: #64748b;
-  --text-muted: #94a3b8;
+  --text-primary: #111827;
+  --text-secondary: #6B7280;
+  --text-muted: #9CA3AF;
   
   /* Accents & Status Colors */
-  --bg-success: #dcfce7;
-  --text-success: #15803d;
-  --bg-warning: #fef3c7;
-  --text-warning: #b45309;
-  --bg-error: #fee2e2;
-  --text-error: #b91c1c;
+  --bg-success: #ECFDF5;
+  --text-success: #22C55E;
+  --bg-warning: #FFFBEB;
+  --text-warning: #F59E0B;
+  --bg-error: #FEF2F2;
+  --text-error: #EF4444;
 
   /* Accent color overrides (dynamically updated by role via class or inline style) */
-  --bg-accent: #e0f2fe;
-  --text-accent: #0284c7;
+  --bg-accent: #EFF6FF;
+  --text-accent: #2563EB;
   --radius: 12px;
 }
 
@@ -144,13 +144,18 @@ button, a, select, input[type="button"], input[type="submit"], [role="button"] {
 
 /* Topbar Header */
 .topbar {
-  height: 56px;
-  padding: 0 24px;
+  height: 72px;
+  padding: 16px 32px;
   border-bottom: 1px solid var(--border);
   background-color: var(--surface-1);
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+/* Card Shadow */
+.card-shadow {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
 }
 
 /* Typography scale */
