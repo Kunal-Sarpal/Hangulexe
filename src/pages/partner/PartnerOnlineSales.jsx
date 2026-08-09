@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { ONLINE_SALES } from '../../data/constants';
+import { useState, useEffect } from 'react';
+import { apiGetOnlineSales } from '../../api/api';
 import { formatCurrency } from '../../utils/helpers';
 import Icons from '../../components/Icons';
 import StatCard from '../../components/ui/StatCard';
@@ -10,11 +10,17 @@ import Breadcrumb from '../../components/ui/Breadcrumb';
 
 const PartnerOnlineSales = ({ navigateTo }) => {
   const [page, setPage] = useState(1);
+  const [sales, setSales] = useState([]);
   const perPage = 5;
-  const totalPages = Math.ceil(ONLINE_SALES.length / perPage);
-  const paged = ONLINE_SALES.slice((page - 1) * perPage, page * perPage);
-  const totalRevenue = ONLINE_SALES.reduce((s, o) => s + o.revenue, 0);
-  const pendingPayout = ONLINE_SALES.filter(o => ['Processing', 'Shipped'].includes(o.status)).reduce((s, o) => s + o.netPayout, 0);
+
+  useEffect(() => {
+    apiGetOnlineSales().then(setSales).catch(console.error);
+  }, []);
+
+  const totalPages = Math.ceil(sales.length / perPage);
+  const paged = sales.slice((page - 1) * perPage, page * perPage);
+  const totalRevenue = sales.reduce((s, o) => s + parseFloat(o.revenue), 0);
+  const pendingPayout = sales.filter(o => ['Processing', 'Shipped'].includes(o.status)).reduce((s, o) => s + parseFloat(o.netPayout), 0);
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -23,7 +29,7 @@ const PartnerOnlineSales = ({ navigateTo }) => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard title="Total Online Revenue" value={formatCurrency(totalRevenue)} icon={<Icons.Online />} color="from-blue-500 to-blue-600" />
         <StatCard title="Pending Payouts" value={formatCurrency(pendingPayout)} icon={<Icons.Settlement />} color="from-amber-500 to-amber-600" />
-        <StatCard title="Orders This Month" value={ONLINE_SALES.length.toString()} icon={<Icons.Orders />} color="from-emerald-500 to-emerald-600" />
+        <StatCard title="Orders This Month" value={sales.length.toString()} icon={<Icons.Orders />} color="from-emerald-500 to-emerald-600" />
       </div>
       <div className="bg-white rounded-2xl border border-slate-200/50 p-6 card-shadow">
         <TableWrapper>

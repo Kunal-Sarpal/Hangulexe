@@ -153,6 +153,7 @@ export const DESIGN_REQUESTS = [
 export const SIDEBAR_ITEMS = {
   Manager: [
     { id: 'dashboard', label: 'Dashboard', icon: 'Dashboard' },
+    { id: 'analytics', label: 'Store Analytics', icon: 'Chart' },
     { id: 'inventory', label: 'Inventory', icon: 'Inventory' },
     { id: 'layout', label: 'Inventory Layout', icon: 'Layout' },
     { id: 'orders', label: 'Orders', icon: 'Orders' },

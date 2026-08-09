@@ -6,10 +6,12 @@ import ManagerStaff from './ManagerStaff';
 import ManagerCoupons from './ManagerCoupons';
 import ManagerReports from './ManagerReports';
 import ManagerSettings from './ManagerSettings';
+import AnalyticsDashboard from '../dashboards/AnalyticsDashboard';
 
 const ManagerPages = ({ page, navigateTo, showToast, modalState, setModalState }) => {
   switch (page) {
     case 'dashboard': return <ManagerDashboard navigateTo={navigateTo} />;
+    case 'analytics': return <AnalyticsDashboard />;
     case 'inventory': return <ManagerInventory navigateTo={navigateTo} showToast={showToast} />;
     case 'layout': return <ManagerLayout navigateTo={navigateTo} />;
     case 'orders': return <ManagerOrders navigateTo={navigateTo} />;

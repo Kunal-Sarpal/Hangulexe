@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { COUPONS } from '../../data/constants';
+import { useState, useEffect } from 'react';
+import { apiGetCoupons, apiCreateCoupon } from '../../api/api';
 import { formatCurrency } from '../../utils/helpers';
 import Icons from '../../components/Icons';
 import StatusBadge from '../../components/ui/StatusBadge';
@@ -12,9 +12,27 @@ import Modal from '../../components/ui/Modal';
 const ManagerCoupons = ({ navigateTo, showToast }) => {
   const [page, setPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
+  const [coupons, setCoupons] = useState([]);
+  const [newCoupon, setNewCoupon] = useState({});
   const perPage = 5;
-  const totalPages = Math.ceil(COUPONS.length / perPage);
-  const paged = COUPONS.slice((page - 1) * perPage, page * perPage);
+
+  const fetchCoupons = () => apiGetCoupons().then(setCoupons).catch(console.error);
+  useEffect(() => { fetchCoupons(); }, []);
+
+  const totalPages = Math.ceil(coupons.length / perPage);
+  const paged = coupons.slice((page - 1) * perPage, page * perPage);
+
+  const handleCreate = async () => {
+    try {
+      await apiCreateCoupon(newCoupon);
+      setShowModal(false);
+      setNewCoupon({});
+      showToast('Coupon created successfully');
+      fetchCoupons();
+    } catch (err) {
+      showToast(err.message || 'Failed', 'error');
+    }
+  };
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -48,20 +66,20 @@ const ManagerCoupons = ({ navigateTo, showToast }) => {
 
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Create Coupon">
         <div className="space-y-4">
-          <FormField label="Coupon Code"><input className={inputCls} placeholder="e.g. SUMMER30" /></FormField>
+          <FormField label="Coupon Code"><input className={inputCls} placeholder="e.g. SUMMER30" onChange={e => setNewCoupon(p => ({ ...p, code: e.target.value }))} /></FormField>
           <FormField label="Discount Type">
-            <select className={inputCls}><option>% Off</option><option>Flat Off</option><option>BOGO</option></select>
+            <select className={inputCls} onChange={e => setNewCoupon(p => ({ ...p, type: e.target.value }))}><option>% Off</option><option>Flat Off</option><option>BOGO</option></select>
           </FormField>
-          <FormField label="Value"><input className={inputCls} placeholder="e.g. 20% or ₹100" /></FormField>
-          <FormField label="Minimum Order (₹)"><input type="number" className={inputCls} placeholder="0" /></FormField>
+          <FormField label="Value"><input className={inputCls} placeholder="e.g. 20% or ₹100" onChange={e => setNewCoupon(p => ({ ...p, value: e.target.value }))} /></FormField>
+          <FormField label="Minimum Order (₹)"><input type="number" className={inputCls} placeholder="0" onChange={e => setNewCoupon(p => ({ ...p, minOrder: e.target.value }))} /></FormField>
           <div className="grid grid-cols-2 gap-4">
-            <FormField label="Valid From"><input type="date" className={inputCls} /></FormField>
-            <FormField label="Valid To"><input type="date" className={inputCls} /></FormField>
+            <FormField label="Valid From"><input type="date" className={inputCls} onChange={e => setNewCoupon(p => ({ ...p, validFrom: e.target.value }))} /></FormField>
+            <FormField label="Valid To"><input type="date" className={inputCls} onChange={e => setNewCoupon(p => ({ ...p, validTo: e.target.value }))} /></FormField>
           </div>
         </div>
         <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-slate-100">
           <button onClick={() => setShowModal(false)} className={btnSecondary}>Cancel</button>
-          <button onClick={() => { setShowModal(false); showToast('Coupon created successfully'); }} className={btnPrimary}>Create Coupon</button>
+          <button onClick={handleCreate} className={btnPrimary}>Create Coupon</button>
         </div>
       </Modal>
     </div>

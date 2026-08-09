@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { apiLookupOrder } from '../../api/api';
 import { formatCurrency } from '../../utils/helpers';
 import Icons from '../../components/Icons';
 import StatusBadge from '../../components/ui/StatusBadge';
@@ -11,14 +12,11 @@ const ReceptionistOrderLookup = ({ navigateTo }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [result, setResult] = useState(null);
 
-  const handleSearch = () => {
-    if (searchQuery.toLowerCase().includes('0892') || searchQuery.includes('98100')) {
-      setResult({ id: 'FC-2024-0892', customer: 'Ananya Mehta', phone: '+91 98100 23456', items: [
-        { name: 'Classic White Kurta', qty: 1, price: 999 },
-        { name: 'Cotton Polo T-Shirt', qty: 2, price: 1398 },
-        { name: 'Palazzo Pants', qty: 1, price: 1399 },
-      ], total: 4297, payment: 'UPI', date: '27 Jun 2025', status: 'Out for Delivery' });
-    } else {
+  const handleSearch = async () => {
+    try {
+      const data = await apiLookupOrder(searchQuery);
+      setResult(data.result);
+    } catch {
       setResult('not_found');
     }
   };

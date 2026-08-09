@@ -2,9 +2,14 @@ import ManagerPages from './manager/ManagerPages';
 import ReceptionistPages from './receptionist/ReceptionistPages';
 import DesignerPages from './designer/DesignerPages';
 import PartnerPages from './partner/PartnerPages';
+import AnalyticsDashboard from './dashboards/AnalyticsDashboard';
 import EmptyState from '../components/ui/EmptyState';
 
 const PageRouter = ({ role, page, navigateTo, showToast, modalState, setModalState }) => {
+  if (page === 'analytics' && (role === 'Manager' || role === 'Partner')) {
+    return <AnalyticsDashboard />;
+  }
+
   switch (role) {
     case 'Manager':
       return <ManagerPages page={page} navigateTo={navigateTo} showToast={showToast} modalState={modalState} setModalState={setModalState} />;

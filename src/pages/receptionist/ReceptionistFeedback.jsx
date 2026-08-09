@@ -1,13 +1,13 @@
+import { useState, useEffect } from 'react';
+import { apiGetFeedbacks } from '../../api/api';
 import Breadcrumb from '../../components/ui/Breadcrumb';
 
 const ReceptionistFeedback = ({ navigateTo, showToast }) => {
-  const feedbacks = [
-    { customer: 'Anjali Mehta', rating: 5, comment: 'Amazing collection! The staff was very helpful with my bridal lehenga selection.', date: '27 Jun 2025' },
-    { customer: 'Karan Singh', rating: 4, comment: 'Good variety of formals. Would love to see more slim-fit options.', date: '27 Jun 2025' },
-    { customer: 'Priya Nair', rating: 5, comment: 'Quick pickup, everything was packed perfectly. Will visit again!', date: '26 Jun 2025' },
-    { customer: 'Deepak Gupta', rating: 3, comment: 'The return process could be smoother. Had to wait for 20 minutes.', date: '26 Jun 2025' },
-    { customer: 'Simran Kaur', rating: 4, comment: 'Loved the new summer collection. Great prices for the quality.', date: '25 Jun 2025' },
-  ];
+  const [feedbacks, setFeedbacks] = useState([]);
+
+  useEffect(() => {
+    apiGetFeedbacks().then(setFeedbacks).catch(console.error);
+  }, []);
 
   return (
     <div className="space-y-5 animate-fade-in">

@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { INVENTORY, MONTHLY_REVENUE } from '../../data/constants';
+import { useState, useEffect } from 'react';
+import { apiGetManagerDashboard } from '../../api/api';
 import { formatCurrency } from '../../utils/helpers';
 import Icons from '../../components/Icons';
 import StatCard from '../../components/ui/StatCard';
@@ -7,11 +7,13 @@ import BarChart from '../../components/charts/BarChart';
 import DonutChart from '../../components/charts/DonutChart';
 
 const ManagerDashboard = ({ navigateTo }) => {
-  const categoryData = useMemo(() => {
-    const cats = {};
-    INVENTORY.forEach(item => { cats[item.category] = (cats[item.category] || 0) + item.stock; });
-    return Object.entries(cats).map(([label, value]) => ({ label, value }));
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    apiGetManagerDashboard().then(setData).catch(console.error);
   }, []);
+
+  if (!data) return <div className="animate-fade-in p-8 text-center text-slate-400">Loading dashboard…</div>;
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -21,20 +23,20 @@ const ManagerDashboard = ({ navigateTo }) => {
       </div>
       
       <div className="stat-card-grid">
-        <StatCard title="Total Revenue" value="₹8,42,500" icon={<Icons.Sale />} color="from-blue-500 to-blue-600" trend="↑ 12.5% from last month" />
-        <StatCard title="Orders Today" value="47" icon={<Icons.Orders />} color="from-emerald-500 to-emerald-600" trend="↑ 8 more than yesterday" />
-        <StatCard title="Low Stock Items" value="12" icon={<Icons.Inventory />} color="from-amber-500 to-amber-600" />
-        <StatCard title="Active Coupons" value="6" icon={<Icons.Coupon />} color="from-purple-500 to-purple-600" />
+        <StatCard title="Total Revenue" value={formatCurrency(data.stats.totalRevenue)} icon={<Icons.Sale />} color="from-blue-500 to-blue-600" trend="↑ 12.5% from last month" />
+        <StatCard title="Orders Today" value={String(data.stats.ordersToday)} icon={<Icons.Orders />} color="from-emerald-500 to-emerald-600" trend="↑ 8 more than yesterday" />
+        <StatCard title="Low Stock Items" value={String(data.stats.lowStock)} icon={<Icons.Inventory />} color="from-amber-500 to-amber-600" />
+        <StatCard title="Active Coupons" value={String(data.stats.activeCoupons)} icon={<Icons.Coupon />} color="from-purple-500 to-purple-600" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-[20px]">
         <div className="content-card-wrapper">
           <h3 className="section-heading revenue-chart-heading">Monthly Revenue</h3>
-          <BarChart data={MONTHLY_REVENUE} />
+          <BarChart data={data.monthlyRevenue} />
         </div>
         <div className="content-card-wrapper">
           <h3 className="section-heading" style={{ marginBottom: '16px' }}>Category-wise Inventory</h3>
-          <DonutChart data={categoryData} />
+          <DonutChart data={data.categoryData} />
         </div>
       </div>
 
@@ -55,13 +57,7 @@ const ManagerDashboard = ({ navigateTo }) => {
               </tr>
             </thead>
             <tbody>
-              {[
-                { id: 'FC-2024-0892', customer: 'Ananya Mehta', items: 3, total: 4297, status: 'Delivered' },
-                { id: 'FC-2024-0891', customer: 'Vikash Patel', items: 1, total: 2499, status: 'Shipped' },
-                { id: 'FC-2024-0890', customer: 'Ritu Sharma', items: 2, total: 6998, status: 'Processing' },
-                { id: 'FC-2024-0889', customer: 'Deepak Nair', items: 4, total: 8795, status: 'Delivered' },
-                { id: 'FC-2024-0888', customer: 'Simran Kaur', items: 1, total: 999, status: 'Pending' },
-              ].map((o, i) => (
+              {data.recentOrders.map((o, i) => (
                 <tr key={i}>
                   <td>
                     <button onClick={() => navigateTo('orders')} className="order-id-link" style={{ background: 'none', border: 'none', padding: 0 }}>

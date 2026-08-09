@@ -17,40 +17,39 @@
 }
 
 :root {
-  --font-sans: 'Inter', 'Manrope', 'Google Sans', system-ui, -apple-system, sans-serif;
-  --font-display: 'Inter', 'Manrope', 'Neue Machina', 'Google Sans', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Manrope', 'Outfit', 'Google Sans', system-ui, -apple-system, sans-serif;
+  --font-display: 'Playfair Display', 'Neue Machina', 'Google Sans', system-ui, -apple-system, sans-serif;
   --line-height-base: 1.5;
   
   /* Theme Colors */
-  --bg-primary: #F8FAFC;
+  --bg-primary: #FAF9F6;
   --surface-1: #FFFFFF;
-  --surface-2: #FFFFFF;
-  --border: #E5E7EB;
+  --surface-2: #FAF9F6;
+  --border: #E6E2DA;
   
   /* Text Colors */
-  --text-primary: #111827;
-  --text-secondary: #6B7280;
-  --text-muted: #9CA3AF;
+  --text-primary: #1C1B19;
+  --text-secondary: #6E6A63;
+  --text-muted: #A39E95;
   
   /* Accents & Status Colors */
-  --bg-success: #ECFDF5;
-  --text-success: #22C55E;
-  --bg-warning: #FFFBEB;
-  --text-warning: #F59E0B;
+  --bg-success: #F0FDF4;
+  --text-success: #15803D;
+  --bg-warning: #FEF3C7;
+  --text-warning: #D97706;
   --bg-error: #FEF2F2;
-  --text-error: #EF4444;
+  --text-error: #DC2626;
 
   /* Accent color overrides (dynamically updated by role via class or inline style) */
-  --bg-accent: #EFF6FF;
-  --text-accent: #2563EB;
-  --radius: 12px;
+  --bg-accent: #F5F3ED;
+  --text-accent: #1C1B19;
+  --radius: 8px;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+.font-display {
+  font-family: var(--font-display);
 }
+
 
 body {
   font-family: var(--font-sans);

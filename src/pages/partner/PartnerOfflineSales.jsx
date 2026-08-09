@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { OFFLINE_SALES } from '../../data/constants';
+import { useState, useEffect } from 'react';
+import { apiGetOfflineSales, apiCreateOfflineSale } from '../../api/api';
 import { formatCurrency } from '../../utils/helpers';
 import Icons from '../../components/Icons';
 import StatusBadge from '../../components/ui/StatusBadge';
@@ -12,9 +12,25 @@ import Modal from '../../components/ui/Modal';
 const PartnerOfflineSales = ({ navigateTo, showToast }) => {
   const [page, setPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
+  const [sales, setSales] = useState([]);
   const perPage = 5;
-  const totalPages = Math.ceil(OFFLINE_SALES.length / perPage);
-  const paged = OFFLINE_SALES.slice((page - 1) * perPage, page * perPage);
+
+  const fetchSales = () => apiGetOfflineSales().then(setSales).catch(console.error);
+  useEffect(() => { fetchSales(); }, []);
+
+  const totalPages = Math.ceil(sales.length / perPage);
+  const paged = sales.slice((page - 1) * perPage, page * perPage);
+
+  const handleRecord = async () => {
+    try {
+      await apiCreateOfflineSale({ customer: 'New Customer', total: 0, payment: 'Cash', gst: true });
+      setShowModal(false);
+      showToast('Sale recorded successfully');
+      fetchSales();
+    } catch (err) {
+      showToast(err.message || 'Failed', 'error');
+    }
+  };
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -78,7 +94,7 @@ const PartnerOfflineSales = ({ navigateTo, showToast }) => {
         </div>
         <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-slate-100">
           <button onClick={() => setShowModal(false)} className={btnSecondary}>Cancel</button>
-          <button onClick={() => { setShowModal(false); showToast('Sale recorded successfully'); }} className={btnPrimary}>Record Sale</button>
+          <button onClick={handleRecord} className={btnPrimary}>Record Sale</button>
         </div>
       </Modal>
     </div>

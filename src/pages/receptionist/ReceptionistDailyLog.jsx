@@ -1,18 +1,13 @@
+import { useState, useEffect } from 'react';
+import { apiGetDailyLogs } from '../../api/api';
 import Breadcrumb from '../../components/ui/Breadcrumb';
 
 const ReceptionistDailyLog = ({ navigateTo }) => {
-  const logs = [
-    { time: '09:00 AM', event: 'Store opened', type: 'system' },
-    { time: '09:15 AM', event: 'Neha Patel checked in', type: 'staff' },
-    { time: '10:15 AM', event: 'Walk-in: Anjali Mehta — Browse', type: 'walkin' },
-    { time: '10:30 AM', event: 'Appointment: Sonia Gupta — Bridal Lehenga Fitting (Confirmed)', type: 'appointment' },
-    { time: '11:00 AM', event: 'Walk-in: Karan Singh — Fitting', type: 'walkin' },
-    { time: '11:30 AM', event: 'Appointment: Rahul Sharma — Blazer Alteration (Pending)', type: 'appointment' },
-    { time: '12:30 PM', event: 'Return request: Deepak Gupta — Slim Fit Chinos', type: 'return' },
-    { time: '01:52 PM', event: 'Ravi Kumar checked in', type: 'staff' },
-    { time: '02:00 PM', event: 'Appointment: Priya Nair — Saree Draping (Confirmed)', type: 'appointment' },
-    { time: '02:30 PM', event: 'Walk-in: Mohit Jain — Fitting', type: 'walkin' },
-  ];
+  const [logs, setLogs] = useState([]);
+
+  useEffect(() => {
+    apiGetDailyLogs().then(setLogs).catch(console.error);
+  }, []);
 
   const getLogColor = (type) => {
     switch (type) {

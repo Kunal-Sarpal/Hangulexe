@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { WALKINS } from '../../data/constants';
+import { useState, useEffect } from 'react';
+import { apiGetWalkins } from '../../api/api';
 import StatusBadge from '../../components/ui/StatusBadge';
 import Pagination from '../../components/ui/Pagination';
 import { TableWrapper, Th, Td } from '../../components/ui/Table';
@@ -7,9 +7,15 @@ import Breadcrumb from '../../components/ui/Breadcrumb';
 
 const ReceptionistWalkins = ({ navigateTo }) => {
   const [page, setPage] = useState(1);
+  const [walkins, setWalkins] = useState([]);
   const perPage = 5;
-  const totalPages = Math.ceil(WALKINS.length / perPage);
-  const paged = WALKINS.slice((page - 1) * perPage, page * perPage);
+
+  useEffect(() => {
+    apiGetWalkins().then(setWalkins).catch(console.error);
+  }, []);
+
+  const totalPages = Math.ceil(walkins.length / perPage);
+  const paged = walkins.slice((page - 1) * perPage, page * perPage);
 
   return (
     <div className="space-y-5 animate-fade-in">

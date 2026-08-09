@@ -1,15 +1,14 @@
+import { useState, useEffect } from 'react';
+import { apiGetCollections } from '../../api/api';
 import StatusBadge from '../../components/ui/StatusBadge';
 import Breadcrumb from '../../components/ui/Breadcrumb';
 
 const DesignerCollections = ({ navigateTo }) => {
-  const collections = [
-    { name: 'Summer Collection', season: 'SS25', designs: 8, status: 'Active', color: '#f59e0b' },
-    { name: 'Festive', season: 'AW24', designs: 5, status: 'Active', color: '#ef4444' },
-    { name: 'Casuals', season: 'SS25', designs: 12, status: 'Active', color: '#22c55e' },
-    { name: 'Heritage', season: 'AW24', designs: 3, status: 'Draft', color: '#8b5cf6' },
-    { name: 'Fusion', season: 'SS25', designs: 6, status: 'Active', color: '#ec4899' },
-    { name: 'Formals', season: 'SS25', designs: 4, status: 'Active', color: '#3b82f6' },
-  ];
+  const [collections, setCollections] = useState([]);
+
+  useEffect(() => {
+    apiGetCollections().then(setCollections).catch(console.error);
+  }, []);
 
   return (
     <div className="space-y-5 animate-fade-in">

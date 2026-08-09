@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { USERS } from '../data/constants';
+import { apiLogin, setToken } from '../api/api';
 
 const LoginScreen = ({ onLogin }) => {
   const [email, setEmail] = useState('');
@@ -7,67 +7,86 @@ const LoginScreen = ({ onLogin }) => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setTimeout(() => {
-      const user = USERS[email];
-      if (user) {
-        onLogin({ ...user, email });
-      } else {
-        setError('Invalid credentials. Try manager@fashionco.com');
-        setIsLoading(false);
-      }
-    }, 800);
+    setError('');
+
+    try {
+      const data = await apiLogin(email, password);
+      setToken(data.token);
+      onLogin({ ...data.user, email });
+    } catch (err) {
+      setError(err.message || 'Invalid credentials. Try manager@fashionco.com');
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="login-screen-bg">
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
-      </div>
-      <div className="relative w-full max-w-md animate-fade-in">
-        <div className="login-card">
-          <div className="login-title-wrapper">
-            <div className="login-logo">
-              FC
-            </div>
-            <h1 className="login-title">Fashion Co</h1>
-            <p className="login-subtitle">Admin Panel — Sign in to continue</p>
-          </div>
+    <main className="flex items-center justify-center w-full px-4 min-h-screen bg-white">
+      <form onSubmit={handleSubmit} className="flex w-full flex-col max-w-96">
+        <a href="#" className="mb-8" title="Go to PrebuiltUI">
+          <svg className="size-10" width="30" height="33" viewBox="0 0 30 33" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="m8 4.55 6.75 3.884 6.75-3.885M8 27.83v-7.755L1.25 16.19m27 0-6.75 3.885v7.754M1.655 8.658l13.095 7.546 13.095-7.546M14.75 31.25V16.189m13.5 5.976V10.212a2.98 2.98 0 0 0-1.5-2.585L16.25 1.65a3.01 3.01 0 0 0-3 0L2.75 7.627a3 3 0 0 0-1.5 2.585v11.953a2.98 2.98 0 0 0 1.5 2.585l10.5 5.977a3.01 3.01 0 0 0 3 0l10.5-5.977a3 3 0 0 0 1.5-2.585" stroke="#1d293d" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </a>
 
-          <form onSubmit={handleSubmit} className="login-form">
-            <div className="login-field-group">
-              <label className="login-label">Email</label>
-              <input type="email" value={email} onChange={e => { setEmail(e.target.value); setError(''); }} placeholder="Enter your email" className="login-input" required />
-            </div>
+        <h2 className="text-4xl font-medium text-gray-900">Sign in</h2>
 
-            <div className="login-field-group">
-              <label className="login-label">Password</label>
-              <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter your password" className="login-input" required />
-            </div>
+        <p className="mt-4 text-base text-gray-500/90">
+          Please enter email and password to access.
+        </p>
 
-
-
-            {error && <p className="text-red-400 text-xs bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">{error}</p>}
-
-            <button type="submit" disabled={isLoading} className="login-button">
-              {isLoading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
-                  Signing in…
-                </span>
-              ) : 'Sign In'}
-            </button>
-          </form>
-
-          <div className="login-footer">
-            <p className="login-footer-text">Demo accounts: manager@ · reception@ · designer@ · partner@fashionco.com</p>
-          </div>
+        <div className="mt-10">
+          <label className="font-medium text-gray-900">Email</label>
+          <input
+            placeholder="Please enter your email"
+            className="mt-2 rounded-md ring ring-gray-200 focus:ring-2 focus:ring-indigo-600 outline-none px-3 py-3 w-full text-gray-900"
+            required
+            type="email"
+            name="email"
+            value={email}
+            onChange={e => { setEmail(e.target.value); setError(''); }}
+          />
         </div>
-      </div>
-    </div>
+
+        <div className="mt-6">
+          <label className="font-medium text-gray-900">Password</label>
+          <input
+            placeholder="Please enter your password"
+            className="mt-2 rounded-md ring ring-gray-200 focus:ring-2 focus:ring-indigo-600 outline-none px-3 py-3 w-full text-gray-900"
+            required
+            type="password"
+            name="password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+          />
+        </div>
+
+        {error && <p className="mt-4 text-red-500 text-sm bg-red-50 rounded-lg px-3 py-2 border border-red-200">{error}</p>}
+
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="mt-8 py-3 w-full cursor-pointer rounded-md bg-indigo-600 text-white transition hover:bg-indigo-700 disabled:opacity-70 flex justify-center items-center"
+        >
+          {isLoading ? (
+            <span className="flex items-center justify-center gap-2">
+              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+              Signing in…
+            </span>
+          ) : 'Login'}
+        </button>
+
+        <p className="text-center py-8 text-gray-600">
+          Demo accounts: manager@ · reception@ · designer@ · partner@fashionco.com
+        </p>
+        
+        <p className='text-center text-gray-600'>
+          Don't have an account? <a href="/signup" className="text-indigo-600 hover:underline">Sign up</a>
+        </p>
+      </form>
+    </main>
   );
 };
 

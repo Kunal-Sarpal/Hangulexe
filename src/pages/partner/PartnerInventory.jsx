@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { INVENTORY } from '../../data/constants';
+import { useState, useEffect } from 'react';
+import { apiGetProducts } from '../../api/api';
 import { formatCurrency } from '../../utils/helpers';
 import StatusBadge from '../../components/ui/StatusBadge';
 import Pagination from '../../components/ui/Pagination';
@@ -8,9 +8,16 @@ import Breadcrumb from '../../components/ui/Breadcrumb';
 
 const PartnerInventory = ({ navigateTo }) => {
   const [page, setPage] = useState(1);
+  const [products, setProducts] = useState([]);
+  const [totalPages, setTotalPages] = useState(1);
   const perPage = 6;
-  const totalPages = Math.ceil(INVENTORY.length / perPage);
-  const paged = INVENTORY.slice((page - 1) * perPage, page * perPage);
+
+  useEffect(() => {
+    apiGetProducts({ page, limit: perPage }).then(data => {
+      setProducts(data.products);
+      setTotalPages(data.totalPages);
+    }).catch(console.error);
+  }, [page]);
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -25,7 +32,7 @@ const PartnerInventory = ({ navigateTo }) => {
             <Th>SKU</Th><Th>Product</Th><Th>Category</Th><Th>MRP</Th><Th>Selling ₹</Th><Th>Stock</Th><Th>Status</Th>
           </tr></thead>
           <tbody>
-            {paged.map((item, i) => (
+            {products.map((item, i) => (
               <tr key={i} className="hover:bg-slate-50/50 transition-colors">
                 <Td><span className="font-mono text-xs font-medium text-blue-600">{item.sku}</span></Td>
                 <Td className="font-medium">{item.name}</Td>
