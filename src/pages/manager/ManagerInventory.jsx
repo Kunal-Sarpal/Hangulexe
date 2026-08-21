@@ -50,6 +50,7 @@ const ManagerInventory = ({ navigateTo, showToast }) => {
   const [capturedPhoto, setCapturedPhoto] = useState(null);
   const [cameraDevices, setCameraDevices] = useState([]);
   const [selectedCameraId, setSelectedCameraId] = useState('');
+  const [previewUrls, setPreviewUrls] = useState({});
 
   const startCamera = async (deviceId = '') => {
     try {
@@ -122,10 +123,12 @@ const ManagerInventory = ({ navigateTo, showToast }) => {
       setImageLinks(prev => {
         const clean = prev.filter(url => url && url.trim() !== '');
         if (clean.length === 1 && clean[0] === INITIAL_PRODUCT_STATE.images[0]) {
-          return [res.url];
+          return [res.key];
         }
-        return [...clean, res.url];
+        return [...clean, res.key];
       });
+      
+      setPreviewUrls(prev => ({ ...prev, [res.key]: res.url }));
       
       showToast('Snapshot uploaded successfully!');
       stopCamera();
@@ -143,12 +146,14 @@ const ManagerInventory = ({ navigateTo, showToast }) => {
 
     setLocalUploading(true);
     let successCount = 0;
-    let newUrls = [];
+    let newKeys = [];
+    const newPreviews = {};
 
     for (const file of files) {
       try {
         const res = await apiUploadFile(file);
-        newUrls.push(res.url);
+        newKeys.push(res.key);
+        newPreviews[res.key] = res.url;
         successCount++;
       } catch (err) {
         console.error(`Error uploading ${file.name}:`, err);
@@ -156,14 +161,15 @@ const ManagerInventory = ({ navigateTo, showToast }) => {
       }
     }
 
-    if (newUrls.length > 0) {
+    if (newKeys.length > 0) {
       setImageLinks(prev => {
         const clean = prev.filter(url => url && url.trim() !== '');
         if (clean.length === 1 && clean[0] === INITIAL_PRODUCT_STATE.images[0]) {
-          return [...newUrls];
+          return [...newKeys];
         }
-        return [...clean, ...newUrls];
+        return [...clean, ...newKeys];
       });
+      setPreviewUrls(prev => ({ ...prev, ...newPreviews }));
     }
 
     if (successCount > 0) {
@@ -484,32 +490,35 @@ const ManagerInventory = ({ navigateTo, showToast }) => {
 
             {/* List and preview input links */}
             <div className="flex flex-col gap-3">
-              {imageLinks.map((url, idx) => (
-                <div key={idx} className="flex items-center gap-3 bg-white p-2.5 rounded-xl border border-slate-100 shadow-2xs">
-                  <span className="text-xs font-mono font-bold text-slate-400 w-5 text-center">#{idx + 1}</span>
-                  <input
-                    type="url"
-                    value={url}
-                    onChange={e => handleUpdateImageLink(idx, e.target.value)}
-                    placeholder="https://images.unsplash.com/photo-xxx"
-                    className="flex-1 text-xs border-0 bg-transparent py-1 focus:ring-0 focus:outline-none placeholder:text-slate-300 font-medium"
-                  />
-                  {url && (
-                    <div className="relative w-9 h-9 rounded-md overflow-hidden bg-slate-50 border border-slate-200/60 shrink-0">
-                      <img src={url} alt="Preview" className="w-full h-full object-cover" onError={(e) => e.target.style.display = 'none'} />
-                    </div>
-                  )}
-                  {imageLinks.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveImageLink(idx)}
-                      className="w-7 h-7 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50/50 flex items-center justify-center font-bold text-sm transition-colors cursor-pointer"
-                    >
-                      ×
-                    </button>
-                  )}
-                </div>
-              ))}
+              {imageLinks.map((url, idx) => {
+                const displayUrl = previewUrls[url] || url;
+                return (
+                  <div key={idx} className="flex items-center gap-3 bg-white p-2.5 rounded-xl border border-slate-100 shadow-2xs">
+                    <span className="text-xs font-mono font-bold text-slate-400 w-5 text-center">#{idx + 1}</span>
+                    <input
+                      type="text"
+                      value={url}
+                      onChange={e => handleUpdateImageLink(idx, e.target.value)}
+                      placeholder="e.g. uploads/filename.jpg or https://images.unsplash.com/..."
+                      className="flex-1 text-xs border-0 bg-transparent py-1 focus:ring-0 focus:outline-none placeholder:text-slate-300 font-medium"
+                    />
+                    {url && (
+                      <div className="relative w-9 h-9 rounded-md overflow-hidden bg-slate-50 border border-slate-200/60 shrink-0">
+                        <img src={displayUrl} alt="Preview" className="w-full h-full object-cover" onError={(e) => e.target.style.display = 'none'} />
+                      </div>
+                    )}
+                    {imageLinks.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImageLink(idx)}
+                        className="w-7 h-7 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50/50 flex items-center justify-center font-bold text-sm transition-colors cursor-pointer"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
 
