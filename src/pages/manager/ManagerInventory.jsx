@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { apiGetProducts, apiCreateProduct, apiDeleteProduct } from '../../api/api';
+import { apiGetProducts, apiCreateProduct, apiDeleteProduct, apiUploadFile } from '../../api/api';
 import { formatCurrency } from '../../utils/helpers';
 import Icons from '../../components/Icons';
 import StatusBadge from '../../components/ui/StatusBadge';
@@ -43,6 +43,135 @@ const ManagerInventory = ({ navigateTo, showToast }) => {
   const [newProduct, setNewProduct] = useState(INITIAL_PRODUCT_STATE);
   const [imageLinks, setImageLinks] = useState(['https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80']);
   const perPage = 6;
+
+  const [localUploading, setLocalUploading] = useState(false);
+  const [showCameraModal, setShowCameraModal] = useState(false);
+  const [cameraStream, setCameraStream] = useState(null);
+  const [capturedPhoto, setCapturedPhoto] = useState(null);
+  const [cameraDevices, setCameraDevices] = useState([]);
+  const [selectedCameraId, setSelectedCameraId] = useState('');
+
+  const startCamera = async (deviceId = '') => {
+    try {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+      }
+      setCapturedPhoto(null);
+      
+      const constraints = {
+        video: deviceId ? { deviceId: { exact: deviceId } } : { facingMode: 'environment' }
+      };
+      
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      setCameraStream(stream);
+      setShowCameraModal(true);
+      
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevs = devices.filter(device => device.kind === 'videoinput');
+      setCameraDevices(videoDevs);
+      
+      if (!deviceId && videoDevs.length > 0) {
+        const tracks = stream.getVideoTracks();
+        if (tracks.length > 0) {
+          const currentSettings = tracks[0].getSettings();
+          if (currentSettings.deviceId) {
+            setSelectedCameraId(currentSettings.deviceId);
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Error starting camera:', err);
+      showToast('Could not access camera. Please check permissions.', 'error');
+    }
+  };
+
+  const stopCamera = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop());
+      setCameraStream(null);
+    }
+    setCapturedPhoto(null);
+    setShowCameraModal(false);
+  };
+
+  const capturePhoto = () => {
+    const video = document.getElementById('camera-video-feed');
+    if (!video) return;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob((blob) => {
+      if (blob) {
+        const fileUrl = URL.createObjectURL(blob);
+        setCapturedPhoto({ blob, previewUrl: fileUrl });
+      }
+    }, 'image/jpeg', 0.95);
+  };
+
+  const handleUploadSnapshot = async () => {
+    if (!capturedPhoto) return;
+    try {
+      setLocalUploading(true);
+      const file = new File([capturedPhoto.blob], `snapshot-${Date.now()}.jpg`, { type: 'image/jpeg' });
+      const res = await apiUploadFile(file);
+      
+      setImageLinks(prev => {
+        const clean = prev.filter(url => url && url.trim() !== '');
+        if (clean.length === 1 && clean[0] === INITIAL_PRODUCT_STATE.images[0]) {
+          return [res.url];
+        }
+        return [...clean, res.url];
+      });
+      
+      showToast('Snapshot uploaded successfully!');
+      stopCamera();
+    } catch (err) {
+      console.error('Error uploading snapshot:', err);
+      showToast(err.message || 'Failed to upload snapshot', 'error');
+    } finally {
+      setLocalUploading(false);
+    }
+  };
+
+  const handleLocalFilesUpload = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    setLocalUploading(true);
+    let successCount = 0;
+    let newUrls = [];
+
+    for (const file of files) {
+      try {
+        const res = await apiUploadFile(file);
+        newUrls.push(res.url);
+        successCount++;
+      } catch (err) {
+        console.error(`Error uploading ${file.name}:`, err);
+        showToast(`Failed to upload ${file.name}: ${err.message}`, 'error');
+      }
+    }
+
+    if (newUrls.length > 0) {
+      setImageLinks(prev => {
+        const clean = prev.filter(url => url && url.trim() !== '');
+        if (clean.length === 1 && clean[0] === INITIAL_PRODUCT_STATE.images[0]) {
+          return [...newUrls];
+        }
+        return [...clean, ...newUrls];
+      });
+    }
+
+    if (successCount > 0) {
+      showToast(`Successfully uploaded ${successCount} image(s)!`);
+    }
+    setLocalUploading(false);
+    e.target.value = '';
+  };
 
   const fetchProducts = () => {
     const params = { page, limit: perPage };
@@ -297,34 +426,85 @@ const ManagerInventory = ({ navigateTo, showToast }) => {
             <textarea value={newProduct.description} rows={2} className={`${inputCls} h-auto py-2`} placeholder="Provide product details, fabric, embroidery..." onChange={e => setNewProduct(p => ({ ...p, description: e.target.value }))} />
           </FormField>
 
-          {/* Multiple Image URLs Section */}
-          <div className="border border-slate-200 rounded-xl p-4 bg-slate-50/50 flex flex-col gap-3">
-            <div className="flex items-center justify-between">
+          {/* S3 Image Uploader & Camera Snapshots Section */}
+          <div className="border border-slate-200 rounded-xl p-5 bg-slate-50/50 flex flex-col gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
-                <h4 className="text-sm font-bold text-slate-800">Product Image Links (Multiple Allowed)</h4>
-                <p className="text-xs text-slate-500">Add URLs of images. Customers will be able to slide through all images!</p>
+                <h4 className="text-sm font-bold text-slate-800">Product Images</h4>
+                <p className="text-xs text-slate-500">Upload images directly to S3 or capture instantly using your camera!</p>
               </div>
-              <button type="button" onClick={handleAddImageLink} className="text-xs bg-blue-50 text-blue-600 hover:bg-blue-100 font-semibold px-3 py-1.5 rounded-lg border border-blue-200 transition-colors">
-                + Add Image Link
-              </button>
+              <div className="flex gap-2">
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  id="s3-image-upload-input"
+                  className="hidden"
+                  onChange={handleLocalFilesUpload}
+                />
+                <button
+                  type="button"
+                  onClick={() => document.getElementById('s3-image-upload-input').click()}
+                  disabled={localUploading}
+                  className="text-xs bg-white text-slate-700 hover:bg-slate-50 font-semibold px-3 py-2 rounded-lg border border-slate-200 shadow-xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
+                >
+                  <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                  Upload Files
+                </button>
+                <button
+                  type="button"
+                  onClick={() => startCamera()}
+                  disabled={localUploading}
+                  className="text-xs bg-white text-slate-700 hover:bg-slate-50 font-semibold px-3 py-2 rounded-lg border border-slate-200 shadow-xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
+                >
+                  <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  Take Photo
+                </button>
+                <button
+                  type="button"
+                  onClick={handleAddImageLink}
+                  className="text-xs bg-blue-50 text-blue-600 hover:bg-blue-100 font-semibold px-3 py-2 rounded-lg border border-blue-200 flex items-center gap-1 transition-all cursor-pointer active:scale-95"
+                >
+                  + Add Link
+                </button>
+              </div>
             </div>
 
-            <div className="flex flex-col gap-2.5">
+            {localUploading && (
+              <div className="flex items-center gap-2 text-xs text-blue-600 font-semibold bg-blue-50/50 border border-blue-100 rounded-lg p-2.5">
+                <svg className="animate-spin h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                Uploading images directly to S3...
+              </div>
+            )}
+
+            {/* List and preview input links */}
+            <div className="flex flex-col gap-3">
               {imageLinks.map((url, idx) => (
-                <div key={idx} className="flex items-center gap-3">
-                  <span className="text-xs font-mono font-bold text-slate-400 w-5">#{idx + 1}</span>
+                <div key={idx} className="flex items-center gap-3 bg-white p-2.5 rounded-xl border border-slate-100 shadow-2xs">
+                  <span className="text-xs font-mono font-bold text-slate-400 w-5 text-center">#{idx + 1}</span>
                   <input
                     type="url"
                     value={url}
                     onChange={e => handleUpdateImageLink(idx, e.target.value)}
                     placeholder="https://images.unsplash.com/photo-xxx"
-                    className={`${inputCls} flex-1`}
+                    className="flex-1 text-xs border-0 bg-transparent py-1 focus:ring-0 focus:outline-none placeholder:text-slate-300 font-medium"
                   />
                   {url && (
-                    <img src={url} alt="Preview" className="w-9 h-9 object-cover rounded-md border border-slate-200 bg-white" onError={(e) => e.target.style.display = 'none'} />
+                    <div className="relative w-9 h-9 rounded-md overflow-hidden bg-slate-50 border border-slate-200/60 shrink-0">
+                      <img src={url} alt="Preview" className="w-full h-full object-cover" onError={(e) => e.target.style.display = 'none'} />
+                    </div>
                   )}
                   {imageLinks.length > 1 && (
-                    <button type="button" onClick={() => handleRemoveImageLink(idx)} className="text-red-500 hover:text-red-700 p-1 font-bold text-lg">
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImageLink(idx)}
+                      className="w-7 h-7 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50/50 flex items-center justify-center font-bold text-sm transition-colors cursor-pointer"
+                    >
                       ×
                     </button>
                   )}
@@ -337,6 +517,107 @@ const ManagerInventory = ({ navigateTo, showToast }) => {
         <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-slate-100">
           <button onClick={() => setShowAddModal(false)} className={btnSecondary}>Cancel</button>
           <button onClick={handleAddProduct} className={btnPrimary}>Add Product</button>
+        </div>
+      </Modal>
+
+      {/* Camera Capture Modal */}
+      <Modal isOpen={showCameraModal} onClose={stopCamera} title="Camera Live Capture" width="max-w-2xl">
+        <div className="flex flex-col gap-4 items-center">
+          {capturedPhoto ? (
+            <div className="relative w-full max-h-[50vh] overflow-hidden rounded-2xl border border-slate-200 bg-black flex items-center justify-center shadow-inner">
+              <img src={capturedPhoto.previewUrl} alt="Captured preview" className="max-w-full max-h-[50vh] object-contain" />
+            </div>
+          ) : (
+            <div className="relative w-full max-h-[50vh] overflow-hidden rounded-2xl border border-slate-200 bg-black flex items-center justify-center shadow-inner">
+              <video
+                id="camera-video-feed"
+                autoPlay
+                playsInline
+                className="max-w-full max-h-[50vh] object-contain scale-x-[-1]"
+                ref={(el) => {
+                  if (el && cameraStream && el.srcObject !== cameraStream) {
+                    el.srcObject = cameraStream;
+                  }
+                }}
+              />
+              {!cameraStream && (
+                <div className="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">
+                  Starting camera feed...
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Camera Controls */}
+          <div className="w-full flex flex-col gap-3">
+            {cameraDevices.length > 1 && !capturedPhoto && (
+              <div className="flex items-center gap-2 justify-center">
+                <label className="text-xs font-semibold text-slate-500">Switch Camera:</label>
+                <select
+                  value={selectedCameraId}
+                  onChange={(e) => {
+                    setSelectedCameraId(e.target.value);
+                    startCamera(e.target.value);
+                  }}
+                  className="text-xs bg-slate-100 rounded-lg p-1.5 border border-slate-200 focus:outline-none"
+                >
+                  {cameraDevices.map((device, idx) => (
+                    <option key={device.deviceId} value={device.deviceId}>
+                      {device.label || `Camera ${idx + 1}`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div className="flex justify-center gap-3">
+              {capturedPhoto ? (
+                <>
+                  <button
+                    onClick={() => startCamera(selectedCameraId)}
+                    disabled={localUploading}
+                    className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold text-sm transition-all cursor-pointer"
+                  >
+                    Retake Photo
+                  </button>
+                  <button
+                    onClick={handleUploadSnapshot}
+                    disabled={localUploading}
+                    className="px-5 py-2.5 rounded-xl bg-[#2563EB] text-white hover:bg-[#1D4ED8] font-semibold text-sm shadow-sm flex items-center gap-2 transition-all cursor-pointer"
+                  >
+                    {localUploading ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        Uploading...
+                      </>
+                    ) : (
+                      'Upload Snapshot'
+                    )}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={stopCamera}
+                    className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold text-sm transition-all cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={capturePhoto}
+                    disabled={!cameraStream}
+                    className="px-5 py-2.5 rounded-xl bg-slate-900 text-white hover:bg-slate-800 font-semibold text-sm shadow-sm flex items-center gap-2 transition-all cursor-pointer"
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Capture Photo
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </Modal>
     </div>

@@ -252,3 +252,32 @@ export const apiGetShelfLayout = async () => {
   ];
 };
 export const apiGetBusinessProfile = () => request('/business-profile');
+
+// ═══════════════════════════════════════════════════════════
+// FILE UPLOADS
+// ═══════════════════════════════════════════════════════════
+export const apiUploadFile = async (file) => {
+  const token = getToken();
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const headers = {
+    'Bypass-Tunnel-Reminder': 'true',
+    'bypass-tunnel-reminder': 'true',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+
+  try {
+    const res = await fetch(`${API_BASE}/files/upload`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || data.error || 'Upload failed');
+    return data;
+  } catch (err) {
+    console.error('Upload Error:', err.message);
+    throw err;
+  }
+};
