@@ -122,6 +122,17 @@ const ManagerOrders = ({ navigateTo, showToast }) => {
               <StatusBadge status={selectedOrder.status} />
             </div>
 
+            {selectedOrder.address && (
+              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs text-left">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
+                  📍 Delivery Address
+                </span>
+                <p className="font-semibold text-slate-800 leading-relaxed">
+                  {selectedOrder.address}
+                </p>
+              </div>
+            )}
+
             <div className="border border-slate-200 rounded-xl p-3 bg-white space-y-2">
               <h5 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Ordered Items</h5>
               {selectedOrder.itemList && selectedOrder.itemList.length > 0 ? (
