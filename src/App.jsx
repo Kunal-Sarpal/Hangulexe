@@ -67,11 +67,11 @@ export default function App() {
       const rc = ROLE_COLORS[role] || ROLE_COLORS['Manager'];
 
       content = (
-        <div className="flex h-screen w-full overflow-hidden" style={{ background: 'var(--bg-primary)', '--bg-accent': rc.lightHex, '--text-accent': rc.accentHex }}>
-          <Sidebar role={role} currentPage={currentPage} navigateTo={navigateTo} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} onLogout={handleLogout} />
+        <div className="flex h-screen w-full overflow-hidden" style={{ background: '#F7F7F7', '--bg-accent': rc.lightHex, '--text-accent': rc.accentHex }}>
+          <Sidebar role={role} currentPage={currentPage} navigateTo={navigateTo} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} onLogout={handleLogout} user={user} />
           <div className="flex-1 flex flex-col overflow-hidden">
-            <Topbar user={user} rc={rc} onLogout={handleLogout} />
-            <main className="main-content">
+            <Topbar user={user} rc={rc} onLogout={handleLogout} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} navigateTo={navigateTo} />
+            <main className="main-content bg-[#F7F7F7]">
               <PageRouter role={role} page={currentPage} navigateTo={navigateTo} showToast={showToast} modalState={modalState} setModalState={setModalState} />
             </main>
           </div>

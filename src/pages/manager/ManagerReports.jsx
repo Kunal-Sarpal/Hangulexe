@@ -179,70 +179,69 @@ const ManagerReports = ({ navigateTo, showToast }) => {
   const reportData = selectedReport ? REPORTS_DATA[selectedReport] : null;
 
   return (
-    <div className="space-y-6 animate-fade-in mx-auto max-w-[1400px] w-full px-8 py-6">
+    <div className="space-y-6 animate-fade-in text-left">
       
       {/* Header */}
-      <div className="flex flex-col gap-2">
-        <Breadcrumb onClick={() => navigateTo('dashboard')} label="Dashboard" />
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-[32px] font-bold text-[#111827] tracking-tight leading-none">
-              {selectedReport ? selectedReport : 'Reports'}
-            </h2>
-            <p className="text-[14px] text-[#6B7280] font-medium leading-none mt-1">
-              {selectedReport ? `Interactive Chart.js analytics for ${selectedReport.toLowerCase()}` : 'Select a report category to view real-time data & analytics'}
-            </p>
-          </div>
-
-          {selectedReport && (
-            <div className="flex items-center gap-3">
-              <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-semibold">
-                {['This Month', 'Quarter', 'This Year'].map(t => (
-                  <button
-                    key={t}
-                    onClick={() => setTimeRange(t)}
-                    className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${timeRange === t ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
-              <button
-                onClick={() => handleExport(selectedReport)}
-                className="h-10 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all cursor-pointer shadow-sm"
-              >
-                Export Report
-              </button>
-              <button
-                onClick={() => setSelectedReport(null)}
-                className="h-10 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all cursor-pointer"
-              >
-                ← Back to Reports
-              </button>
-            </div>
-          )}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#D9DEE4] pb-4">
+        <div>
+          <h2 className="text-xl font-black text-[#2A3F54] tracking-tight">
+            {selectedReport ? selectedReport : 'Analytics & Business Reports'}
+          </h2>
+          <p className="text-xs text-[#73879C] mt-0.5">
+            {selectedReport ? `Interactive performance analytics for ${selectedReport.toLowerCase()}` : 'Select a business category to inspect trends, charts & data digests'}
+          </p>
         </div>
+
+        {selectedReport && (
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex bg-gray-100 p-0.5 rounded-lg border border-[#D9DEE4] text-xs font-semibold">
+              {['This Month', 'Quarter', 'This Year'].map(t => (
+                <button
+                  key={t}
+                  onClick={() => setTimeRange(t)}
+                  className={`px-3 py-1 rounded-md transition-all cursor-pointer ${timeRange === t ? 'bg-zinc-900 text-white shadow-xs' : 'text-zinc-500 hover:text-zinc-900'}`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => handleExport(selectedReport)}
+              className="cursor-pointer group relative inline-flex items-center justify-center gap-1.5 px-5 py-2 bg-black bg-opacity-90 text-[#f1f1f1] rounded-full hover:bg-opacity-75 transition-all font-semibold shadow-md active:scale-95 text-xs"
+            >
+              <Icons.Download className="w-3.5 h-3.5" />
+              <span>Export CSV</span>
+            </button>
+            <button
+              onClick={() => setSelectedReport(null)}
+              className="px-3.5 py-1.5 rounded-full border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-700 text-xs font-bold transition-all cursor-pointer"
+            >
+              ← Back
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Main Reports Cards Grid */}
       {!selectedReport ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {reportCards.map((r, i) => (
             <div
               key={i}
               onClick={() => setSelectedReport(r.title)}
-              className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer group flex flex-col justify-between"
+              className="w-full bg-white border border-zinc-200/90 rounded-[10px] shadow-none relative px-4 pt-4 pb-3 md:px-5 md:pt-4.5 md:pb-3.5 transition-all duration-300 flex flex-col justify-between cursor-pointer hover:border-zinc-400 group min-h-[140px]"
             >
               <div>
-                <div className={`w-12 h-12 rounded-2xl ${r.iconBg} flex items-center justify-center shadow-sm mb-4 group-hover:scale-110 transition-transform`}>
+                <div className="w-10 h-10 rounded-lg bg-zinc-100 border border-zinc-200 text-zinc-800 flex items-center justify-center shadow-xs mb-3 group-hover:scale-105 transition-transform">
                   {r.icon}
                 </div>
-                <h3 className="font-bold text-slate-900 text-lg group-hover:text-blue-600 transition-colors">{r.title}</h3>
-                <p className="text-xs text-slate-500 mt-1 font-medium leading-relaxed">{r.desc}</p>
+                <h3 className="font-bold text-zinc-900 text-base group-hover:text-indigo-600 transition-colors">{r.title}</h3>
+                <p className="text-xs text-zinc-500 mt-1 leading-relaxed">{r.desc}</p>
               </div>
-              <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-blue-600 group-hover:translate-x-1 transition-transform">
-                <span>View Chart Analytics</span>
-                <span>→</span>
+
+              <div className="pt-4 mt-4 border-t border-zinc-100 flex items-center justify-between">
+                <span className="text-xs font-bold text-zinc-900 group-hover:text-indigo-600 group-hover:underline">Explore Report →</span>
+                <span className="text-[10px] text-zinc-400 font-mono uppercase">Live Data</span>
               </div>
             </div>
           ))}

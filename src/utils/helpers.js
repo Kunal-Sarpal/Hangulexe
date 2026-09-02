@@ -7,15 +7,15 @@ export const formatCurrency = (num) => `₹${num.toLocaleString('en-IN')}`;
 export const getStatusColor = (status) => {
   const s = status?.toLowerCase();
   if (['active', 'in stock', 'completed', 'present', 'confirmed', 'approved', 'delivered', 'paid', 'published'].includes(s)) {
-    return { bg: 'bg-[#ECFDF5]', text: 'text-[#047857]', border: 'border-[#D1FAE5]', dot: 'bg-[#10B981]' };
+    return { bg: 'bg-emerald-50', text: 'text-[#00A86B]', border: 'border-emerald-200', dot: 'bg-[#00A86B]' };
   }
   if (['low stock', 'pending', 'processing', 'in store', 'under review', 'in progress', 'new', 'shipped'].includes(s)) {
-    return { bg: 'bg-[#FFFBEB]', text: 'text-[#B45309]', border: 'border-[#FEF3C7]', dot: 'bg-[#F59E0B]' };
+    return { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', dot: 'bg-amber-500' };
   }
   if (['out of stock', 'expired', 'absent', 'cancelled', 'rejected', 'returned', 'refunded'].includes(s)) {
-    return { bg: 'bg-[#FEF2F2]', text: 'text-[#B91C1C]', border: 'border-[#FEE2E2]', dot: 'bg-[#EF4444]' };
+    return { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200', dot: 'bg-rose-500' };
   }
-  return { bg: 'bg-[#F9FAFB]', text: 'text-[#374151]', border: 'border-[#E5E7EB]', dot: 'bg-[#9CA3AF]' };
+  return { bg: 'bg-zinc-100', text: 'text-zinc-700', border: 'border-zinc-200', dot: 'bg-zinc-500' };
 };
 
 export function polarToCartesian(cx, cy, r, angleDeg) {

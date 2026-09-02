@@ -3,9 +3,22 @@
 @font-face {
   font-family: 'Neue Machina';
   src: url('https://shuvmarg.vercel.app/fonts/NeueMachina-Regular.woff2') format('woff2');
-  font-weight: normal;
+  font-weight: 100 900;
   font-style: normal;
   font-display: swap;
+}
+
+.font-machina {
+  font-family: 'Neue Machina', monospace, sans-serif !important;
+  font-feature-settings: "tnum" 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.font-mono {
+  font-family: 'Neue Machina', monospace, sans-serif !important;
+  font-feature-settings: "tnum" 1;
+  font-variant-numeric: tabular-nums;
 }
 
 @font-face {

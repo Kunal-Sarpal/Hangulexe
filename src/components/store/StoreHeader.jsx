@@ -105,19 +105,21 @@ export default function StoreHeader({ user, setUser, handleLogout, likesCount = 
                     </div>
 
                     <div className="py-1">
-                      <button 
-                        onClick={() => {
-                          setProfileDropdownOpen(false);
-                          setShowAddressModal(true);
-                        }} 
-                        className="w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2 cursor-pointer transition-colors"
-                      >
-                        <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        <span>Saved Addresses</span>
-                      </button>
+                      {user.role === 'Customer' && (
+                        <button 
+                          onClick={() => {
+                            setProfileDropdownOpen(false);
+                            setShowAddressModal(true);
+                          }} 
+                          className="w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2 cursor-pointer transition-colors"
+                        >
+                          <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          <span>Saved Addresses</span>
+                        </button>
+                      )}
 
                       {user.role !== 'Customer' && (
                         <button 
@@ -235,15 +237,17 @@ export default function StoreHeader({ user, setUser, handleLogout, likesCount = 
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <button 
-                    onClick={() => {
-                      setShowMobileMenu(false);
-                      setShowAddressModal(true);
-                    }}
-                    className="text-left text-xs font-semibold py-2 text-[#1C1B19] hover:opacity-75 flex items-center gap-2 cursor-pointer"
-                  >
-                    <span>📍</span> Saved Addresses
-                  </button>
+                  {user.role === 'Customer' && (
+                    <button 
+                      onClick={() => {
+                        setShowMobileMenu(false);
+                        setShowAddressModal(true);
+                      }}
+                      className="text-left text-xs font-semibold py-2 text-[#1C1B19] hover:opacity-75 flex items-center gap-2 cursor-pointer"
+                    >
+                      <span>📍</span> Saved Addresses
+                    </button>
+                  )}
                   {user.role !== 'Customer' && (
                     <button 
                       onClick={() => {

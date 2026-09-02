@@ -13,6 +13,8 @@ import {
   Legend
 } from 'chart.js';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
+import { AdminCard, AdminStatCard } from '../../components/ui/AdminCard';
+import Icons from '../../components/Icons';
 
 ChartJS.register(
   CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement,
@@ -215,110 +217,105 @@ export default function AnalyticsDashboard() {
         </div>
       </div>
 
-      {/* KPI Cards Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 24 }}>
-        <KpiCard label="Total Page Views" value={(activeData.totalVisits || 0).toLocaleString()} icon="👁" color="#6366f1" trend="+12.3%" />
-        <KpiCard label="Unique Sessions" value={(activeData.uniqueSessions || 0).toLocaleString()} icon="🧑‍💻" color="#3b82f6" trend="+8.7%" />
-        <KpiCard label="Avg. Session Time" value={activeData.avgSessionDuration || '3m 48s'} icon="⏱" color="#8b5cf6" />
-        <KpiCard label="Bounce Rate" value={activeData.bounceRate || '34%'} icon="↩" color="#f59e0b" />
-        <KpiCard label="Conversion Rate" value={`${conversionRate}%`} icon="💰" color="#22c55e" trend="+2.1%" />
+      {/* KPI Cards Row using shared AdminStatCard */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 mb-6">
+        <AdminStatCard 
+          title="Total Page Views" 
+          value={(activeData.totalVisits || 0).toLocaleString()} 
+          change="12.3%" 
+          isIncrease={true}
+          icon={Icons.Eye}
+        />
+        <AdminStatCard 
+          title="Unique Sessions" 
+          value={(activeData.uniqueSessions || 0).toLocaleString()} 
+          change="8.7%" 
+          isIncrease={true}
+          icon={Icons.Staff}
+        />
+        <AdminStatCard 
+          title="Avg. Session Time" 
+          value={activeData.avgSessionDuration || '3m 48s'} 
+          icon={Icons.Chart}
+        />
+        <AdminStatCard 
+          title="Bounce Rate" 
+          value={activeData.bounceRate || '34%'} 
+          change="2.4%" 
+          isIncrease={false}
+          icon={Icons.Return}
+        />
+        <AdminStatCard 
+          title="Conversion Rate" 
+          value={`${conversionRate}%`} 
+          change="2.1%" 
+          isIncrease={true}
+          icon={Icons.Orders}
+        />
       </div>
 
-      {/* ═══════════════════════════════════════════════════════════ */}
-      {/* PRODUCT CLICK ENGAGEMENT SECTION — VISUAL GRID & CARDS */}
-      {/* ═══════════════════════════════════════════════════════════ */}
-      <div style={{
-        background: '#fff', borderRadius: 16, padding: '24px',
-        border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', marginBottom: 24
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <div>
-            <h2 style={{ fontSize: 18, fontWeight: 800, color: '#0f172a', margin: 0 }}>Product Click Analytics</h2>
-            <p style={{ fontSize: 13, color: '#64748b', marginTop: 2 }}>See which products customers click most vs least</p>
-          </div>
-          {/* Tabs */}
-          <div style={{ display: 'flex', background: '#f1f5f9', borderRadius: 10, padding: 4 }}>
+      {/* PRODUCT CLICK ENGAGEMENT SECTION */}
+      <AdminCard
+        title="Product Click Analytics"
+        subtitle="See which products customers click most vs least"
+        action={
+          <div className="flex bg-zinc-100 p-0.5 rounded-lg border border-zinc-200">
             <button
               onClick={() => setClickTab('most')}
-              style={{
-                border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: 700,
-                cursor: 'pointer', transition: 'all 0.2s',
-                background: clickTab === 'most' ? '#0f172a' : 'transparent',
-                color: clickTab === 'most' ? '#fff' : '#64748b'
-              }}
+              className={`px-3 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
+                clickTab === 'most' ? 'bg-black text-white shadow-xs' : 'text-zinc-600 hover:text-zinc-900'
+              }`}
             >
               🔥 Most Clicked ({mostClickedList.length})
             </button>
             <button
               onClick={() => setClickTab('least')}
-              style={{
-                border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: 700,
-                cursor: 'pointer', transition: 'all 0.2s',
-                background: clickTab === 'least' ? '#ef4444' : 'transparent',
-                color: clickTab === 'least' ? '#fff' : '#64748b'
-              }}
+              className={`px-3 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
+                clickTab === 'least' ? 'bg-black text-white shadow-xs' : 'text-zinc-600 hover:text-zinc-900'
+              }`}
             >
               ⚠️ Least Clicked ({leastClickedList.length})
             </button>
           </div>
-        </div>
-
+        }
+        className="mb-6"
+      >
         {/* Product Cards Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
           {displayProducts.map((prod, idx) => (
             <div
               key={prod.id || idx}
-              style={{
-                background: '#f8fafc', borderRadius: 14, padding: 14,
-                border: clickTab === 'most' && idx === 0 ? '2px solid #fbbf24' : '1px solid #e2e8f0',
-                display: 'flex', gap: 12, alignItems: 'center', position: 'relative',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.03)', transition: 'transform 0.2s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
-              onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+              className="bg-white border border-zinc-200/90 hover:border-zinc-400 rounded-xl p-3 flex gap-3 items-center relative transition-all duration-200 hover:shadow-xs group cursor-pointer"
             >
-              <div style={{
-                position: 'absolute', top: 8, left: 8, zIndex: 10,
-                width: 24, height: 24, borderRadius: '50%',
-                background: clickTab === 'most' ? (idx === 0 ? '#f59e0b' : '#334155') : '#ef4444',
-                color: '#fff', fontSize: 11, fontWeight: 900,
-                display: 'flex', alignItems: 'center', justifyContent: 'center'
-              }}>
+              <span className="absolute top-2 left-2 z-10 w-5 h-5 rounded-full bg-black text-white text-[10px] font-bold font-machina flex items-center justify-center shadow-xs">
                 #{idx + 1}
-              </div>
+              </span>
 
-              <div style={{
-                width: 70, height: 85, borderRadius: 10, overflow: 'hidden',
-                background: '#e2e8f0', flexShrink: 0, border: '1px solid #cbd5e1'
-              }}>
+              <div className="w-16 h-18 rounded-lg overflow-hidden bg-zinc-50 shrink-0 border border-zinc-200/80 p-0.5 flex items-center justify-center">
                 <img
                   src={prod.image || 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80'}
                   alt={prod.name}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  className="w-full h-full object-cover rounded-md group-hover:scale-105 transition-transform duration-200"
+                  onError={e => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80'; }}
                 />
               </div>
 
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: '#6366f1', background: '#e0e7ff', padding: '2px 6px', borderRadius: 4 }}>
+              <div className="flex-1 min-w-0">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 bg-zinc-100 px-1.5 py-0.5 rounded border border-zinc-200">
                   {prod.category || 'Apparel'}
                 </span>
-                <h4 style={{ fontSize: 13, fontWeight: 800, color: '#0f172a', margin: '4px 0 2px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <h4 className="text-xs font-bold text-zinc-900 truncate mt-1">
                   {prod.name}
                 </h4>
-                <p style={{ fontSize: 12, fontWeight: 700, color: '#475569', margin: '0 0 6px 0' }}>
+                <p className="text-xs font-machina font-bold text-zinc-900 mt-0.5">
                   ₹{(prod.price || 4999).toLocaleString()}
                 </p>
 
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{
-                    fontSize: 11, fontWeight: 800,
-                    color: clickTab === 'most' ? '#166534' : '#991b1b',
-                    background: clickTab === 'most' ? '#dcfce7' : '#fee2e2',
-                    padding: '2px 8px', borderRadius: 6
-                  }}>
-                    {clickTab === 'most' ? '🔥' : '⚠️'} {prod.clicks || 1} Clicks
+                <div className="flex items-center justify-between mt-1.5">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold font-machina text-zinc-700 bg-zinc-100 px-2 py-0.5 rounded-full border border-zinc-200">
+                    🔥 {prod.clicks || 1} Clicks
                   </span>
-                  <span style={{ fontSize: 10, color: prod.stock === 0 ? '#ef4444' : '#64748b', fontWeight: 600 }}>
+                  <span className={`text-[10px] font-semibold font-machina ${prod.stock === 0 ? 'text-rose-600' : 'text-zinc-400'}`}>
                     {prod.stock === 0 ? 'Out of Stock' : `${prod.stock || 10} in stock`}
                   </span>
                 </div>
@@ -326,7 +323,7 @@ export default function AnalyticsDashboard() {
             </div>
           ))}
         </div>
-      </div>
+      </AdminCard>
 
       {/* Main Charts Row */}
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, marginBottom: 24 }}>
@@ -690,19 +687,11 @@ function KpiCard({ label, value, icon, color, trend }) {
 
 function ChartCard({ title, subtitle, height = 260, children }) {
   return (
-    <div style={{
-      background: '#fff', borderRadius: 14, padding: '20px 24px',
-      border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-      display: 'flex', flexDirection: 'column'
-    }}>
-      <div style={{ marginBottom: 16 }}>
-        <h3 style={{ fontSize: 16, fontWeight: 800, color: '#0f172a', margin: 0 }}>{title}</h3>
-        {subtitle && <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>{subtitle}</p>}
-      </div>
+    <AdminCard title={title} subtitle={subtitle} className="h-full flex flex-col justify-between">
       <div style={{ position: 'relative', height: height, width: '100%', flex: 1 }}>
         {children}
       </div>
-    </div>
+    </AdminCard>
   );
 }
 
