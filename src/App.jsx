@@ -70,7 +70,7 @@ export default function App() {
         <div className="flex h-screen w-full overflow-hidden" style={{ background: 'var(--bg-primary)', '--bg-accent': rc.lightHex, '--text-accent': rc.accentHex }}>
           <Sidebar role={role} currentPage={currentPage} navigateTo={navigateTo} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} onLogout={handleLogout} />
           <div className="flex-1 flex flex-col overflow-hidden">
-            <Topbar user={user} rc={rc} />
+            <Topbar user={user} rc={rc} onLogout={handleLogout} />
             <main className="main-content">
               <PageRouter role={role} page={currentPage} navigateTo={navigateTo} showToast={showToast} modalState={modalState} setModalState={setModalState} />
             </main>

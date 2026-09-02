@@ -227,7 +227,8 @@ export default function CartPage({ cart, setCart, user, setUser }) {
         cartItems={cartItems}
         totalAmount={total}
         user={user}
-        onOrderSuccess={(orderNum) => {
+        setUser={setUser}
+        onOrderSuccess={() => {
           setCart([]);
           localStorage.removeItem('hanguluxe_cart');
         }}

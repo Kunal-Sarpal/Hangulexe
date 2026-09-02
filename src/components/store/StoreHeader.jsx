@@ -1,11 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { navigate } from '../../hooks/useRouter';
 import Icons from '../Icons';
 import CustomerLoginModal from './CustomerLoginModal';
+import ManageAddressesModal from './ManageAddressesModal';
 
 export default function StoreHeader({ user, setUser, handleLogout, likesCount = 0, cartItemCount = 0 }) {
   const [showLogin, setShowLogin] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [showAddressModal, setShowAddressModal] = useState(false);
+  const profileMenuRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setProfileDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <>
@@ -68,15 +83,74 @@ export default function StoreHeader({ user, setUser, handleLogout, likesCount = 
 
             {/* Profile */}
             {user ? (
-              <div className="relative group cursor-pointer">
-                <span className="text-xs font-bold tracking-wider text-[#1C1B19] border border-[#E6E2DA] rounded-full w-8 h-8 flex items-center justify-center bg-white shadow-sm hover:bg-gray-50">{user.initials || 'ME'}</span>
-                <div className="absolute right-0 mt-2 w-48 bg-white shadow-xl rounded-md hidden group-hover:block border border-gray-100">
-                  <div className="p-3 border-b border-gray-100 text-xs font-semibold text-gray-700">{user.name}</div>
-                  {user.role !== 'Customer' && (
-                    <button onClick={() => navigate('/admin')} className="w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-50">Admin Dashboard</button>
-                  )}
-                  <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-xs text-red-600 hover:bg-gray-50 rounded-b-md">Logout</button>
-                </div>
+              <div className="relative" ref={profileMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setProfileDropdownOpen(prev => !prev)}
+                  className="text-xs font-bold tracking-wider text-[#1C1B19] border border-[#E6E2DA] rounded-full w-8 h-8 flex items-center justify-center bg-white shadow-sm hover:bg-gray-50 hover:border-[#1C1B19] transition-colors cursor-pointer select-none"
+                  aria-expanded={profileDropdownOpen}
+                  aria-label="User profile"
+                >
+                  {user.initials || 'ME'}
+                </button>
+
+                {profileDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white shadow-xl rounded-md border border-gray-100 py-1 z-50 animate-fade-in">
+                    <div className="p-3 border-b border-gray-100">
+                      <div className="text-xs font-bold text-gray-800 truncate">{user.name}</div>
+                      {user.email && <div className="text-[11px] text-gray-500 truncate mt-0.5">{user.email}</div>}
+                      <span className="inline-block mt-1 text-[9px] font-bold px-1.5 py-0.5 rounded bg-[#F5F3ED] text-[#1C1B19] uppercase tracking-wider">
+                        {user.role || 'Customer'}
+                      </span>
+                    </div>
+
+                    <div className="py-1">
+                      <button 
+                        onClick={() => {
+                          setProfileDropdownOpen(false);
+                          setShowAddressModal(true);
+                        }} 
+                        className="w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2 cursor-pointer transition-colors"
+                      >
+                        <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span>Saved Addresses</span>
+                      </button>
+
+                      {user.role !== 'Customer' && (
+                        <button 
+                          onClick={() => {
+                            setProfileDropdownOpen(false);
+                            navigate('/admin');
+                          }} 
+                          className="w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2 cursor-pointer transition-colors"
+                        >
+                          <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                          </svg>
+                          <span>Admin Dashboard</span>
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="border-t border-gray-100 pt-1">
+                      <button 
+                        onClick={() => {
+                          setProfileDropdownOpen(false);
+                          handleLogout();
+                        }} 
+                        className="w-full text-left px-4 py-2 text-xs text-red-600 hover:bg-red-50 rounded-b-md flex items-center gap-2 cursor-pointer font-semibold transition-colors"
+                      >
+                        <svg className="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        <span>Logout</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <button onClick={() => setShowLogin(true)} className="text-[#1C1B19] hover:opacity-75 text-xs font-bold tracking-wider">LOGIN</button>
@@ -99,6 +173,16 @@ export default function StoreHeader({ user, setUser, handleLogout, likesCount = 
       </header>
 
       {showLogin && <CustomerLoginModal onClose={() => setShowLogin(false)} setUser={setUser} />}
+
+      {/* Address Management Modal */}
+      {showAddressModal && (
+        <ManageAddressesModal 
+          isOpen={showAddressModal} 
+          onClose={() => setShowAddressModal(false)} 
+          user={user} 
+          setUser={setUser} 
+        />
+      )}
 
       {/* Mobile Drawer Menu */}
       {showMobileMenu && (
@@ -137,6 +221,64 @@ export default function StoreHeader({ user, setUser, handleLogout, likesCount = 
                 ACCESSORIES
               </button>
             </nav>
+
+            {/* Mobile User Profile & Logout section */}
+            {user ? (
+              <div className="mt-auto pt-6 border-t border-[#E6E2DA]">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="text-xs font-bold tracking-wider text-[#1C1B19] border border-[#E6E2DA] rounded-full w-9 h-9 flex items-center justify-center bg-white shadow-sm">
+                    {user.initials || 'ME'}
+                  </span>
+                  <div className="overflow-hidden">
+                    <p className="text-xs font-bold text-[#1C1B19] truncate">{user.name}</p>
+                    <p className="text-[10px] text-[#6E6A63] truncate">{user.email}</p>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <button 
+                    onClick={() => {
+                      setShowMobileMenu(false);
+                      setShowAddressModal(true);
+                    }}
+                    className="text-left text-xs font-semibold py-2 text-[#1C1B19] hover:opacity-75 flex items-center gap-2 cursor-pointer"
+                  >
+                    <span>📍</span> Saved Addresses
+                  </button>
+                  {user.role !== 'Customer' && (
+                    <button 
+                      onClick={() => {
+                        setShowMobileMenu(false);
+                        navigate('/admin');
+                      }}
+                      className="text-left text-xs font-semibold py-2 text-[#1C1B19] hover:opacity-75 flex items-center gap-2 cursor-pointer"
+                    >
+                      <span>⚙️</span> Admin Dashboard
+                    </button>
+                  )}
+                  <button 
+                    onClick={() => {
+                      setShowMobileMenu(false);
+                      handleLogout();
+                    }}
+                    className="text-left text-xs font-bold py-2 text-red-600 hover:text-red-700 flex items-center gap-2 cursor-pointer mt-1"
+                  >
+                    <span>🚪</span> Logout
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-auto pt-6 border-t border-[#E6E2DA]">
+                <button 
+                  onClick={() => {
+                    setShowMobileMenu(false);
+                    setShowLogin(true);
+                  }}
+                  className="w-full bg-[#1C1B19] text-[#FAF9F6] text-xs font-bold tracking-widest py-3 uppercase text-center cursor-pointer hover:opacity-90"
+                >
+                  Log In / Sign Up
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

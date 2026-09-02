@@ -47,6 +47,9 @@ export const apiSignup = (name, email, password) =>
 
 export const apiGetMe = () => request('/auth/me');
 
+export const apiUpdateProfile = (profileData) =>
+  request('/auth/profile', { method: 'PUT', body: JSON.stringify(profileData) });
+
 // ═══════════════════════════════════════════════════════════
 // DASHBOARD
 // ═══════════════════════════════════════════════════════════
